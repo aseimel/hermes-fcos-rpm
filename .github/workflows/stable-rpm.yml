@@ -63,6 +63,8 @@ jobs:
           rpm -qlp "$rpmfile" | grep -Fx /usr/bin/hermes
           rpm -qip "$rpmfile"
           ! rpm -qpR "$rpmfile" | grep -E '(^ffmpeg$|libjpeg-|liblzma-|libpng16-|libtiff-)'
+          rpm -ivh "$rpmfile"
+          /usr/bin/hermes --version
           mkdir -p dist
           cp "$rpmfile" "dist/hermes-agent-${TAG#v}-stable.x86_64.rpm"
           sha256sum dist/*.rpm > dist/SHA256SUMS

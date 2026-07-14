@@ -1,6 +1,10 @@
 %global hermes_version %{?version}%{!?version:0}
 %global debug_package %{nil}
 %global __brp_mangle_shebangs %{nil}
+# The runtime is downloaded as a self-contained CPython distribution. Fedora's
+# buildroot stripping mutates its private ELF layout and breaks its launcher.
+%global __brp_strip /bin/true
+%global __brp_strip_comment_note /bin/true
 Name:           hermes-agent
 Version:        %{hermes_version}
 Release:        1%{?dist}
