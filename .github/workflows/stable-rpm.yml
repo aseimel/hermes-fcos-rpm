@@ -1,0 +1,74 @@
+name: Build stable Hermes FCOS RPM
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+    inputs:
+      upstream_tag:
+        description: "Optional upstream release tag, for a deliberate rebuild"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TAG: ${{ inputs.upstream_tag }}
+        run: |
+          tag="$REQUESTED_TAG"
+          if [ -z "$tag" ]; then
+            tag="$(gh api repos/NousResearch/hermes-agent/releases/latest --jq .tag_name)"
+          fi
+          test -n "$tag"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+
+  build-and-publish:
+    needs: resolve
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    env:
+      TAG: ${{ needs.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Fedora RPM build dependencies
+        run: dnf -y install rpm-build rpmdevtools python3-devel python3-pip nodejs git curl ca-certificates && dnf clean all
+      - name: Fetch immutable upstream release source
+        run: |
+          version="${TAG#v}"
+          mkdir -p rpmbuild/SOURCES rpmbuild/SPECS rpmbuild/RPMS
+          curl --fail --location --retry 4 --retry-all-errors --output "rpmbuild/SOURCES/hermes-agent-${version}.tar.gz" "https://github.com/NousResearch/hermes-agent/archive/refs/tags/${TAG}.tar.gz"
+          cp packaging/hermes-agent.spec rpmbuild/SPECS/
+      - name: Build RPM
+        run: |
+          version="${TAG#v}"
+          rpmbuild -bb rpmbuild/SPECS/hermes-agent.spec --define "_topdir $(pwd)/rpmbuild" --define "version ${version}"
+      - name: Verify RPM content
+        run: |
+          rpmfile="$(find rpmbuild/RPMS -name '*.rpm' -type f | head -1)"
+          test -n "$rpmfile"
+          rpm -qlp "$rpmfile" | grep -Fx /usr/bin/hermes
+          rpm -qip "$rpmfile"
+          mkdir -p dist
+          cp "$rpmfile" "dist/hermes-agent-${TAG#v}-stable.noarch.rpm"
+          sha256sum dist/*.rpm > dist/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hermes-agent-${{ env.TAG }}-stable-rpm
+          path: dist/
+          if-no-files-found: error
+      - name: Publish or update immutable stable release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_tag="hermes-${TAG#v}-stable"
+          gh release view "$release_tag" >/dev/null 2>&1 || gh release create "$release_tag" --title "Hermes ${TAG} stable RPM" --notes "Built only from upstream release ${TAG}."
+          gh release upload "$release_tag" dist/* --clobber
