@@ -14,8 +14,8 @@ Requires:       ripgrep
 Requires:       ffmpeg
 
 %description
-Hermes Agent installed as a native immutable-host runtime. Configuration,
-secrets, and mutable state are supplied outside this package.
+Hermes Agent with its current supported CPython runtime embedded in the RPM.
+FCOS remains current; configuration, secrets, and mutable state are external.
 
 %prep
 %autosetup -n hermes-agent-%{version}
@@ -23,23 +23,19 @@ secrets, and mutable state are supplied outside this package.
 %build
 mkdir runtime
 uv python install --managed-python --install-dir runtime 3.13
-python=""
-test -n ""
-uv pip install --python "" .
+python="$(find runtime -path '*/bin/python3' -type f | head -1)"
+test -n "$python"
+uv pip install --python "$python" .
 mv runtime/cpython-* runtime/python
 
 %install
 install -d %{buildroot}%{_libexecdir}/hermes-agent
 cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
 install -d %{buildroot}%{_bindir}
-printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/source/.venv/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
+printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/runtime/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
 chmod 0755 %{buildroot}%{_bindir}/hermes
 
 %files
 %license LICENSE
 %{_bindir}/hermes
 %{_libexecdir}/hermes-agent
-
-%changelog
-* Tue Jul 14 2026 Armin Seimel <armin.seimel@gesis.org> - %{version}-1
-- Native FCOS Hermes Agent package
