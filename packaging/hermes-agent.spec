@@ -6,7 +6,7 @@ Summary:        Native Hermes Agent runtime for Fedora CoreOS
 License:        MIT
 URL:            https://github.com/NousResearch/hermes-agent
 Source0:        hermes-agent-%{version}.tar.gz
-BuildArch:      noarch
+BuildArch:      x86_64
 BuildRequires:  python3-devel
 BuildRequires:  python3-pip
 Requires:       python3
