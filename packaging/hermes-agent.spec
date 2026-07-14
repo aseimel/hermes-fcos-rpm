@@ -23,7 +23,7 @@ FCOS remains current; configuration, secrets, and mutable state are external.
 %build
 mkdir runtime
 uv python install --managed-python --install-dir runtime 3.13
-python="$(find runtime -path '*/bin/python3' -type f | head -1)"
+python="$(find runtime -path '*/bin/python3' -executable | head -1)"
 test -n "$python"
 uv pip install --python "$python" .
 mv runtime/cpython-* runtime/python
