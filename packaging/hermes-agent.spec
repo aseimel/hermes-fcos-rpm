@@ -1,4 +1,5 @@
 %global hermes_version %{?version}%{!?version:0}
+%global debug_package %{nil}
 Name:           hermes-agent
 Version:        %{hermes_version}
 Release:        1%{?dist}
