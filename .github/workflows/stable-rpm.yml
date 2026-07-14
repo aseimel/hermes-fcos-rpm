@@ -68,6 +68,7 @@ jobs:
       - name: Publish or update immutable stable release asset
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           release_tag="hermes-${TAG#v}-stable"
           gh release view "$release_tag" >/dev/null 2>&1 || gh release create "$release_tag" --title "Hermes ${TAG} stable RPM" --notes "Built only from upstream release ${TAG}."
