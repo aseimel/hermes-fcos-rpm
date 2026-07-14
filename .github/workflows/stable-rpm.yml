@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Fedora RPM build dependencies
-        run: dnf -y install rpm-build rpmdevtools python3-devel python3-pip nodejs git curl ca-certificates && dnf clean all
+        run: dnf -y install rpm-build rpmdevtools uv nodejs git curl ca-certificates && dnf clean all
       - name: Fetch immutable upstream release source
         run: |
           version="${TAG#v}"

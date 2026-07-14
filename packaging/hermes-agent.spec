@@ -7,9 +7,7 @@ License:        MIT
 URL:            https://github.com/NousResearch/hermes-agent
 Source0:        hermes-agent-%{version}.tar.gz
 BuildArch:      x86_64
-BuildRequires:  python3-devel
-BuildRequires:  python3-pip
-Requires:       python3
+BuildRequires:  uv
 Requires:       git
 Requires:       nodejs
 Requires:       ripgrep
@@ -23,13 +21,16 @@ secrets, and mutable state are supplied outside this package.
 %autosetup -n hermes-agent-%{version}
 
 %build
-python3 -m venv .venv
-.venv/bin/pip install --upgrade pip
-.venv/bin/pip install .
+mkdir runtime
+uv python install --managed-python --install-dir runtime 3.13
+python=""
+test -n ""
+uv pip install --python "" .
+mv runtime/cpython-* runtime/python
 
 %install
 install -d %{buildroot}%{_libexecdir}/hermes-agent
-cp -a . %{buildroot}%{_libexecdir}/hermes-agent/source
+cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
 install -d %{buildroot}%{_bindir}
 printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/source/.venv/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
 chmod 0755 %{buildroot}%{_bindir}/hermes
