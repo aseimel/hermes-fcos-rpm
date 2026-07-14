@@ -9,6 +9,7 @@ URL:            https://github.com/NousResearch/hermes-agent
 Source0:        hermes-agent-%{version}.tar.gz
 BuildArch:      x86_64
 BuildRequires:  uv
+BuildRequires:  patchelf
 Requires:       git
 Requires:       nodejs
 Requires:       ripgrep
@@ -33,6 +34,8 @@ mv "$runtime_dir" runtime/python
 %install
 install -d %{buildroot}%{_libexecdir}/hermes-agent
 cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
+patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9.0.so
+patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9tk9.0.so
 install -d %{buildroot}%{_bindir}
 printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/runtime/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
 chmod 0755 %{buildroot}%{_bindir}/hermes
