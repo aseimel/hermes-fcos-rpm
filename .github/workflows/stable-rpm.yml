@@ -1,6 +1,11 @@
 name: Build stable Hermes FCOS RPM
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - 'packaging/**'
+      - '.github/workflows/stable-rpm.yml'
   schedule:
     - cron: "23 3 * * *"
   workflow_dispatch:
@@ -57,6 +62,7 @@ jobs:
           test -n "$rpmfile"
           rpm -qlp "$rpmfile" | grep -Fx /usr/bin/hermes
           rpm -qip "$rpmfile"
+          ! rpm -qpR "$rpmfile" | grep -E '(^ffmpeg$|libjpeg-|liblzma-|libpng16-|libtiff-)'
           mkdir -p dist
           cp "$rpmfile" "dist/hermes-agent-${TAG#v}-stable.x86_64.rpm"
           sha256sum dist/*.rpm > dist/SHA256SUMS

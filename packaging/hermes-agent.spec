@@ -9,12 +9,12 @@ License:        MIT
 URL:            https://github.com/NousResearch/hermes-agent
 Source0:        hermes-agent-%{version}.tar.gz
 BuildArch:      x86_64
+AutoReqProv:    no
 BuildRequires:  uv
 BuildRequires:  patchelf
 Requires:       git
 Requires:       nodejs
 Requires:       ripgrep
-Requires:       ffmpeg
 
 %description
 Hermes Agent with its current supported CPython runtime embedded in the RPM.
@@ -35,9 +35,8 @@ mv "$runtime_dir" runtime/python
 %install
 install -d %{buildroot}%{_libexecdir}/hermes-agent
 cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
-find %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib -name 'libtcl*.so' -type f -exec patchelf --remove-rpath {} +
 install -d %{buildroot}%{_bindir}
-printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/runtime/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
+printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/runtime/bin/python3 -c "from hermes_cli.main import main; main()" "$@"' > %{buildroot}%{_bindir}/hermes
 chmod 0755 %{buildroot}%{_bindir}/hermes
 
 %files
