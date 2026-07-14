@@ -25,7 +25,7 @@ mkdir runtime
 uv python install --managed-python --install-dir runtime 3.13
 python="$(find runtime -path '*/bin/python3' -executable | head -1)"
 test -n "$python"
-uv pip install --python "$python" .
+uv pip install --break-system-packages --python "$python" .
 mv runtime/cpython-* runtime/python
 
 %install
