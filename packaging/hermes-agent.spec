@@ -1,5 +1,6 @@
 %global hermes_version %{?version}%{!?version:0}
 %global debug_package %{nil}
+%global __brp_mangle_shebangs %{nil}
 Name:           hermes-agent
 Version:        %{hermes_version}
 Release:        1%{?dist}
@@ -34,6 +35,7 @@ mv "$runtime_dir" runtime/python
 %install
 install -d %{buildroot}%{_libexecdir}/hermes-agent
 cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
+find %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib -name 'libtcl*.so' -type f -exec patchelf --remove-rpath {} +
 patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9.0.so
 patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9tk9.0.so
 install -d %{buildroot}%{_bindir}
