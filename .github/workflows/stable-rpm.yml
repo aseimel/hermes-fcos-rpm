@@ -34,7 +34,7 @@ jobs:
   build-and-publish:
     needs: resolve
     runs-on: ubuntu-latest
-    container: fedora:latest
+    container: fedora:42
     env:
       TAG: ${{ needs.resolve.outputs.tag }}
     steps:
