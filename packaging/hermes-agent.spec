@@ -36,8 +36,6 @@ mv "$runtime_dir" runtime/python
 install -d %{buildroot}%{_libexecdir}/hermes-agent
 cp -a runtime/python %{buildroot}%{_libexecdir}/hermes-agent/runtime
 find %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib -name 'libtcl*.so' -type f -exec patchelf --remove-rpath {} +
-patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9.0.so
-patchelf --remove-rpath %{buildroot}%{_libexecdir}/hermes-agent/runtime/lib/libtcl9tk9.0.so
 install -d %{buildroot}%{_bindir}
 printf '%s\n' '#!/bin/sh' 'exec %{_libexecdir}/hermes-agent/runtime/bin/hermes "$@"' > %{buildroot}%{_bindir}/hermes
 chmod 0755 %{buildroot}%{_bindir}/hermes
